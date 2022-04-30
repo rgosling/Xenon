@@ -42,10 +42,10 @@
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@activity('lk_banks').output",
+						"value": "@activity('lk_banks').output.value",
 						"type": "Expression"
 					},
-					"isSequential": true,
+					"isSequential": false,
 					"activities": [
 						{
 							"name": "Copy data1",
@@ -97,15 +97,15 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"p_container": {
-											"value": "@item().target_container",
+											"value": "@item().source_container",
 											"type": "Expression"
 										},
 										"p_file_path": {
-											"value": "@item().target_file_path",
+											"value": "@item().source_file_path",
 											"type": "Expression"
 										},
 										"p_file_name": {
-											"value": "@item().target_file_name",
+											"value": "@item().source_file_name",
 											"type": "Expression"
 										}
 									}
