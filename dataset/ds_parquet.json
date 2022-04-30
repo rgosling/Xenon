@@ -12,6 +12,10 @@
 				"p_file_path": {
 					"value": "@dataset().p_file_path",
 					"type": "Expression"
+				},
+				"p_filename": {
+					"value": "@dataset().p_file_name",
+					"type": "Expression"
 				}
 			}
 		},
