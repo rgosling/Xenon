@@ -7,13 +7,16 @@
 		},
 		"parameters": {
 			"p_container": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "bronze"
 			},
 			"p_file_path": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "banks"
 			},
 			"p_file_name": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "banks.parquet"
 			}
 		},
 		"annotations": [],
