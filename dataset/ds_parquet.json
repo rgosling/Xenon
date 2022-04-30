@@ -3,7 +3,17 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "xenonstorage",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"p_container": {
+					"value": "@dataset().p_container",
+					"type": "Expression"
+				},
+				"p_file_path": {
+					"value": "@dataset().p_file_path",
+					"type": "Expression"
+				}
+			}
 		},
 		"parameters": {
 			"p_container": {
