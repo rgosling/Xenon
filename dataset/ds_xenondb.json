@@ -1,0 +1,12 @@
+{
+	"name": "ds_xenondb",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "xenondb",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
