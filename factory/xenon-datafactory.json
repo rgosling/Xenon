@@ -1,0 +1,9 @@
+{
+	"name": "xenon-datafactory",
+	"location": "centralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "090d36bc-88d9-4640-b9d9-48785c705a70",
+		"tenantId": "71a85e30-f782-4aad-8718-dff247a7d49d"
+	}
+}
