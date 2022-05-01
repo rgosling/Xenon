@@ -15,10 +15,6 @@
 		},
 		"annotations": [],
 		"type": "AzureSqlTable",
-		"schema": [],
-		"typeProperties": {
-			"schema": "stg",
-			"table": "failed_banks"
-		}
+		"schema": []
 	}
 }
