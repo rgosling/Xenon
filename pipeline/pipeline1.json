@@ -13,11 +13,19 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "."
+					},
+					{
+						"name": "Destination",
+						"value": "@{'bronze'}/@{'banks'}/@{'banks.parquet'}"
+					}
+				],
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "select top 5 * \nfrom stg.failed_banks",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -43,11 +51,7 @@
 				"inputs": [
 					{
 						"referenceName": "ds_xenondb",
-						"type": "DatasetReference",
-						"parameters": {
-							"p_schema": "stg",
-							"p_table": "failed_banks"
-						}
+						"type": "DatasetReference"
 					}
 				],
 				"outputs": [
