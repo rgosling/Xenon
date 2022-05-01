@@ -3,21 +3,7 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "xenonstorage",
-			"type": "LinkedServiceReference",
-			"parameters": {
-				"p_container": {
-					"value": "@dataset().p_container",
-					"type": "Expression"
-				},
-				"p_file_path": {
-					"value": "@dataset().p_file_path",
-					"type": "Expression"
-				},
-				"p_filename": {
-					"value": "@dataset().p_file_name",
-					"type": "Expression"
-				}
-			}
+			"type": "LinkedServiceReference"
 		},
 		"parameters": {
 			"p_container": {
@@ -37,7 +23,19 @@
 		"type": "Parquet",
 		"typeProperties": {
 			"location": {
-				"type": "AzureBlobFSLocation"
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().p_file_name",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().p_file_path",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().p_container",
+					"type": "Expression"
+				}
 			},
 			"compressionCodec": "snappy"
 		},

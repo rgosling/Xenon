@@ -97,11 +97,11 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"p_container": {
-											"value": "@item().source_container",
+											"value": "@pipeline().parameters.p_container",
 											"type": "Expression"
 										},
 										"p_file_path": {
-											"value": "@item().source_file_path",
+											"value": "@pipeline().parameters.p_filepath",
 											"type": "Expression"
 										},
 										"p_file_name": {
@@ -116,6 +116,16 @@
 				}
 			}
 		],
+		"parameters": {
+			"p_container": {
+				"type": "string",
+				"defaultValue": "bronze"
+			},
+			"p_filepath": {
+				"type": "string",
+				"defaultValue": "misc"
+			}
+		},
 		"annotations": []
 	}
 }
