@@ -92,7 +92,17 @@
 							"inputs": [
 								{
 									"referenceName": "ds_xenondb",
-									"type": "DatasetReference"
+									"type": "DatasetReference",
+									"parameters": {
+										"p_schema": {
+											"value": "@pipeline().parameters.p_schema",
+											"type": "Expression"
+										},
+										"p_table": {
+											"value": "@pipeline().parameters.p_table",
+											"type": "Expression"
+										}
+									}
 								}
 							],
 							"outputs": [
