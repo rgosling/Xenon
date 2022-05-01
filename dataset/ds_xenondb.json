@@ -7,10 +7,12 @@
 		},
 		"parameters": {
 			"p_schema": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "stg"
 			},
 			"p_table": {
-				"type": "string"
+				"type": "string",
+				"defaultValue": "failed_banks"
 			}
 		},
 		"annotations": [],
