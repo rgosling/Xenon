@@ -66,7 +66,10 @@
 							"typeProperties": {
 								"source": {
 									"type": "AzureSqlSource",
-									"sqlReaderQuery": "SELECT \n     bank_name\n\t,bank_city\n\t,bank_state\n\t,cert_num\n\t,acq_institution\n\t,closing_date\n\t,updated_date\nFROM stg.failed_banks",
+									"sqlReaderQuery": {
+										"value": "@concat('select * from ',item().source_schema,item().source_table)",
+										"type": "Expression"
+									},
 									"queryTimeout": "02:00:00",
 									"partitionOption": "None"
 								},
@@ -95,11 +98,11 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"p_schema": {
-											"value": "@pipeline().parameters.p_schema",
+											"value": "@item().source_schema",
 											"type": "Expression"
 										},
 										"p_table": {
-											"value": "@pipeline().parameters.p_table",
+											"value": "@item().source_table",
 											"type": "Expression"
 										}
 									}
@@ -111,11 +114,11 @@
 									"type": "DatasetReference",
 									"parameters": {
 										"p_container": {
-											"value": "@pipeline().parameters.p_container",
+											"value": "item().source_container",
 											"type": "Expression"
 										},
 										"p_file_path": {
-											"value": "@pipeline().parameters.p_filepath",
+											"value": "item().source_file_path",
 											"type": "Expression"
 										},
 										"p_file_name": {
