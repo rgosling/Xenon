@@ -42,7 +42,11 @@
 				"inputs": [
 					{
 						"referenceName": "ds_xenondb",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"p_schema": "stg",
+							"p_table": "failed_banks"
+						}
 					}
 				],
 				"outputs": [
@@ -53,6 +57,14 @@
 				]
 			}
 		],
+		"parameters": {
+			"p_schema": {
+				"type": "string"
+			},
+			"p_table": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
