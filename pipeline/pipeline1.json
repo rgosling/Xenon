@@ -13,16 +13,7 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [
-					{
-						"name": "Source",
-						"value": "."
-					},
-					{
-						"name": "Destination",
-						"value": "@{'bronze'}/@{'banks'}/@{'banks.parquet'}"
-					}
-				],
+				"userProperties": [],
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
@@ -57,12 +48,7 @@
 				"outputs": [
 					{
 						"referenceName": "ds_parquet",
-						"type": "DatasetReference",
-						"parameters": {
-							"p_container": "bronze",
-							"p_file_path": "banks",
-							"p_file_name": "banks.parquet"
-						}
+						"type": "DatasetReference"
 					}
 				]
 			}
