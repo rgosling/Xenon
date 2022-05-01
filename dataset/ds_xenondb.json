@@ -5,16 +5,6 @@
 			"referenceName": "xenondb",
 			"type": "LinkedServiceReference"
 		},
-		"parameters": {
-			"p_schema": {
-				"type": "string",
-				"defaultValue": "stg"
-			},
-			"p_table": {
-				"type": "string",
-				"defaultValue": "failed_banks"
-			}
-		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": []
