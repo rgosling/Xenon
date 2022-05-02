@@ -1,0 +1,63 @@
+{
+	"name": "pl_move_files",
+	"properties": {
+		"activities": [
+			{
+				"name": "CP_2_Archive",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "7.00:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_parquet",
+						"type": "DatasetReference",
+						"parameters": {
+							"p_container": {
+								"value": "@pipeline().parameters.p_file_container",
+								"type": "Expression"
+							},
+							"p_file_path": {
+								"value": "@pipeline().parameters.p_file_path",
+								"type": "Expression"
+							},
+							"p_file_name": "*.*"
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"p_file_container": {
+				"type": "string",
+				"defaultValue": "bronze"
+			},
+			"p_file_path": {
+				"type": "string",
+				"defaultValue": "sales/bulk"
+			},
+			"p_file_filepec": {
+				"type": "string",
+				"defaultValue": "*.*"
+			}
+		},
+		"annotations": []
+	}
+}
