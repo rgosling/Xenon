@@ -5,11 +5,37 @@
 			"referenceName": "xenonstorage",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"p_container": {
+				"type": "String",
+				"defaultValue": "bronze"
+			},
+			"p_file_path": {
+				"type": "String",
+				"defaultValue": "sales/demo"
+			},
+			"p_file_spec": {
+				"type": "String",
+				"defaultValue": "*.*"
+			}
+		},
 		"annotations": [],
 		"type": "Binary",
 		"typeProperties": {
 			"location": {
-				"type": "AzureBlobFSLocation"
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().p_file_spec",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().p_file_path",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().p_container",
+					"type": "Expression"
+				}
 			}
 		}
 	}
