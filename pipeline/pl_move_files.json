@@ -121,14 +121,7 @@
 							}
 						}
 					},
-					"logStorageSettings": {
-						"linkedServiceName": {
-							"referenceName": "xenonstorage",
-							"type": "LinkedServiceReference"
-						},
-						"path": "logging/adf_delete"
-					},
-					"enableLogging": true,
+					"enableLogging": false,
 					"storeSettings": {
 						"type": "AzureBlobFSReadSettings",
 						"recursive": true,
