@@ -122,33 +122,63 @@
 											"type": "Expression"
 										},
 										"p_file_name": {
-											"value": "@concat(item().source_file_name,'.parquet')",
+											"value": "@concat(item().source_file_name,\nformatDateTime(convertTimeZone(utcnow(),'UTC','Eastern Standard Time'),'yyyy-MM-ddTHHmmss'), '.parquet')\n\n\n",
 											"type": "Expression"
 										}
 									}
 								}
 							]
+						},
+						{
+							"name": "Execute Pipeline1",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "Copy data1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_move_files",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_source_file_container": {
+										"value": "@item().source_container",
+										"type": "Expression"
+									},
+									"p_source_file_path": {
+										"value": "@item().source_file_path",
+										"type": "Expression"
+									},
+									"p_source_file_spec": {
+										"value": "@concat(item().source_file_name,'*.parquet')",
+										"type": "Expression"
+									},
+									"p_target_file_container": {
+										"value": "@item().target_container",
+										"type": "Expression"
+									},
+									"p_target_file_path": {
+										"value": "@item().target_file_path",
+										"type": "Expression"
+									},
+									"p_target_file_spec": {
+										"value": "@concat(item().source_file_name,'*.parquet')",
+										"type": "Expression"
+									}
+								}
+							}
 						}
 					]
 				}
 			}
 		],
-		"parameters": {
-			"p_container": {
-				"type": "string",
-				"defaultValue": "bronze"
-			},
-			"p_filepath": {
-				"type": "string",
-				"defaultValue": "misc"
-			},
-			"p_schema": {
-				"type": "string"
-			},
-			"p_table": {
-				"type": "string"
-			}
-		},
 		"annotations": []
 	}
 }
