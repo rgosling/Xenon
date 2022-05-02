@@ -1,0 +1,16 @@
+{
+	"name": "ds_xenonadls_binary",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "xenonstorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation"
+			}
+		}
+	}
+}
