@@ -1,0 +1,619 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "xenon-datafactory"
+		},
+		"adls2_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'adls2'"
+		},
+		"xenondb_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'xenondb'"
+		},
+		"xenonstorage_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'xenonstorage'"
+		},
+		"adls2_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://xenonadls.dfs.core.windows.net"
+		},
+		"xenonstorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://xenonadls.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/default')]",
+			"type": "Microsoft.DataFactory/factories/managedVirtualNetworks",
+			"apiVersion": "2018-06-01",
+			"properties": {},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				},
+				"managedVirtualNetwork": {
+					"type": "ManagedVirtualNetworkReference",
+					"referenceName": "default"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/managedVirtualNetworks/default')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/adls2')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('adls2_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('adls2_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/xenondb')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('xenondb_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/xenonstorage')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('xenonstorage_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('xenonstorage_accountKey')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_parquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "xenonstorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"p_container": {
+						"type": "string",
+						"defaultValue": "bronze"
+					},
+					"p_file_path": {
+						"type": "string",
+						"defaultValue": "banks"
+					},
+					"p_file_name": {
+						"type": "string",
+						"defaultValue": "banks.parquet"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().p_file_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().p_file_path",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().p_container",
+							"type": "Expression"
+						}
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/xenonstorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_xenondb')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "xenondb",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"p_schema": {
+						"type": "string"
+					},
+					"p_table": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/xenondb')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_xenonadls_binary')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "xenonstorage",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"p_container": {
+						"type": "String",
+						"defaultValue": "bronze"
+					},
+					"p_file_path": {
+						"type": "String",
+						"defaultValue": "sales/demo"
+					},
+					"p_file_spec": {
+						"type": "String",
+						"defaultValue": "*.*"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().p_file_spec",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().p_file_path",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().p_container",
+							"type": "Expression"
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/xenonstorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_move_files')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "CP_2_Archive",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ParquetSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_parquet",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_container": {
+										"value": "@pipeline().parameters.p_source_file_container",
+										"type": "Expression"
+									},
+									"p_file_path": {
+										"value": "@pipeline().parameters.p_source_file_path",
+										"type": "Expression"
+									},
+									"p_file_name": {
+										"value": "@pipeline().parameters.p_source_file_spec",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_parquet",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_container": {
+										"value": "@pipeline().parameters.p_target_file_container",
+										"type": "Expression"
+									},
+									"p_file_path": {
+										"value": "@pipeline().parameters.p_target_file_path",
+										"type": "Expression"
+									},
+									"p_file_name": {
+										"value": "@pipeline().parameters.p_target_file_spec",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "DL_Old_File",
+						"type": "Delete",
+						"dependsOn": [
+							{
+								"activity": "CP_2_Archive",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "ds_parquet",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_container": {
+										"value": "@pipeline().parameters.p_source_file_container",
+										"type": "Expression"
+									},
+									"p_file_path": {
+										"value": "@pipeline().parameters.p_source_file_path",
+										"type": "Expression"
+									},
+									"p_file_name": {
+										"value": "@pipeline().parameters.p_source_file_spec",
+										"type": "Expression"
+									}
+								}
+							},
+							"enableLogging": false,
+							"storeSettings": {
+								"type": "AzureBlobFSReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"p_source_file_container": {
+						"type": "string",
+						"defaultValue": "bronze"
+					},
+					"p_source_file_path": {
+						"type": "string",
+						"defaultValue": "sales/bulk"
+					},
+					"p_source_file_spec": {
+						"type": "string",
+						"defaultValue": "*.*"
+					},
+					"p_target_file_container": {
+						"type": "string"
+					},
+					"p_target_file_path": {
+						"type": "string"
+					},
+					"p_target_file_spec": {
+						"type": "string",
+						"defaultValue": "*.*"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_parquet')]",
+				"[concat(variables('factoryId'), '/linkedServices/xenonstorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_failed_banks')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "lk_banks",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "7.00:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT \n     etl_group\n\t,source_table\n\t,source_schema\n\t,source_container\n\t,source_file_path\n\t,source_file_name\n\t,target_container\n\t,target_file_path\n\t,target_file_name\n\t,processed_files\n\t,select_columns\n\t,is_enabled\n\t,is_truncate\n\t,is_drop_create\n\t,is_file_move\n\t,process_order\nFROM dbo.adf_config\nwhere 1=1\nAND is_enabled='Y'",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "ds_xenondb",
+								"type": "DatasetReference",
+								"parameters": {
+									"p_schema": "dbo",
+									"p_table": "adf_config"
+								}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "FE_Banks",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "lk_banks",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('lk_banks').output.value",
+								"type": "Expression"
+							},
+							"isSequential": false,
+							"activities": [
+								{
+									"name": "Copy data1",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "7.00:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "AzureSqlSource",
+											"sqlReaderQuery": {
+												"value": "@concat('select * from ',item().source_schema,'.',item().source_table)",
+												"type": "Expression"
+											},
+											"queryTimeout": "02:00:00",
+											"partitionOption": "None"
+										},
+										"sink": {
+											"type": "ParquetSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "ParquetWriteSettings"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_xenondb",
+											"type": "DatasetReference",
+											"parameters": {
+												"p_schema": {
+													"value": "@item().source_schema",
+													"type": "Expression"
+												},
+												"p_table": {
+													"value": "@item().source_table",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_parquet",
+											"type": "DatasetReference",
+											"parameters": {
+												"p_container": {
+													"value": "@item().source_container",
+													"type": "Expression"
+												},
+												"p_file_path": {
+													"value": "@item().source_file_path",
+													"type": "Expression"
+												},
+												"p_file_name": {
+													"value": "@concat(item().source_file_name,\nformatDateTime(convertTimeZone(utcnow(),'UTC','Eastern Standard Time'),'yyyy-MM-ddTHHmmss'), '.parquet')\n\n\n",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "Execute Pipeline1",
+									"type": "ExecutePipeline",
+									"dependsOn": [
+										{
+											"activity": "Copy data1",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "pl_move_files",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"p_source_file_container": {
+												"value": "@item().source_container",
+												"type": "Expression"
+											},
+											"p_source_file_path": {
+												"value": "@item().source_file_path",
+												"type": "Expression"
+											},
+											"p_source_file_spec": {
+												"value": "@concat(item().source_file_name,'*.parquet')",
+												"type": "Expression"
+											},
+											"p_target_file_container": {
+												"value": "@item().target_container",
+												"type": "Expression"
+											},
+											"p_target_file_path": {
+												"value": "@item().target_file_path",
+												"type": "Expression"
+											},
+											"p_target_file_spec": {
+												"value": "@concat(item().source_file_name,'*.parquet')",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_xenondb')]",
+				"[concat(variables('factoryId'), '/datasets/ds_parquet')]",
+				"[concat(variables('factoryId'), '/pipelines/pl_move_files')]"
+			]
+		}
+	]
+}
