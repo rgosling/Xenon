@@ -23,6 +23,12 @@
 							"enablePartitionDiscovery": false
 						}
 					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
 					"enableStaging": false
 				},
 				"inputs": [
@@ -41,21 +47,33 @@
 							"p_file_name": "*.*"
 						}
 					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_xenonadls_binary",
+						"type": "DatasetReference"
+					}
 				]
 			}
 		],
 		"parameters": {
-			"p_file_container": {
+			"p_source_file_container": {
 				"type": "string",
 				"defaultValue": "bronze"
 			},
-			"p_file_path": {
+			"p_source_file_path": {
 				"type": "string",
 				"defaultValue": "sales/bulk"
 			},
-			"p_file_filepec": {
+			"p_source_file_spec": {
 				"type": "string",
 				"defaultValue": "*.*"
+			},
+			"p_target_file_container": {
+				"type": "string"
+			},
+			"p_target_file_path": {
+				"type": "string"
 			}
 		},
 		"annotations": []
