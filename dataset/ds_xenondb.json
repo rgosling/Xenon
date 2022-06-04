@@ -1,10 +1,6 @@
 {
 	"name": "ds_xenondb",
 	"properties": {
-		"linkedServiceName": {
-			"referenceName": "xenondb",
-			"type": "LinkedServiceReference"
-		},
 		"parameters": {
 			"p_schema": {
 				"type": "string"
