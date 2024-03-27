@@ -1,0 +1,9 @@
+{
+	"name": "xenon-df",
+	"location": "southcentralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "b9108309-2b4a-41ac-ab49-78b9c383300b",
+		"tenantId": "71a85e30-f782-4aad-8718-dff247a7d49d"
+	}
+}

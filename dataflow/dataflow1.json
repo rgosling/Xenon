@@ -1,0 +1,97 @@
+{
+	"name": "dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Xml1",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_csv",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "flatten1"
+				}
+			],
+			"scriptLines": [
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     limit: 100,",
+				"     ignoreNoFilesFound: false,",
+				"     validationMode: 'none',",
+				"     namespaces: false) ~> source1",
+				"source1 foldDown(unroll({http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}),",
+				"     mapColumn(",
+				"          engine = {http://www.collegenet.com/r25,reservations}.{@engine},",
+				"          pubdate = {http://www.collegenet.com/r25,reservations}.{@pubdate},",
+				"          event_end_dt = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,event_end_dt},",
+				"          event_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,event_id}.{http://www.collegenet.com/r25,_value_},",
+				"          event_locator = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,event_locator},",
+				"          event_name = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,event_name},",
+				"          event_start_dt = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,event_start_dt},",
+				"          event_title = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,event_title},",
+				"          event_type_class = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,event_type_class},",
+				"          event_type_name = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,event_type_name},",
+				"          expected_count = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,expected_count},",
+				"          last_mod_dt = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,last_mod_dt},",
+				"          last_mod_user = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,last_mod_user},",
+				"          organization_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,organization_id}.{http://www.collegenet.com/r25,_value_},",
+				"          organization_name = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,organization_name},",
+				"          post_event_dt = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,post_event_dt},",
+				"          pre_event_dt = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,pre_event_dt},",
+				"          profile_description = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,profile_description},",
+				"          profile_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,profile_id},",
+				"          profile_name = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,profile_name},",
+				"          registered_count = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,registered_count},",
+				"          registration_label = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,registration_label},",
+				"          registration_url = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,registration_url},",
+				"          reservation_comment_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,reservation_comment_id},",
+				"          reservation_comments = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,reservation_comments},",
+				"          reservation_end_dt = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,reservation_end_dt},",
+				"          reservation_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,reservation_id},",
+				"          reservation_start_dt = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,reservation_start_dt},",
+				"          reservation_state = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,reservation_state},",
+				"          reservation_state_name = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,reservation_state_name},",
+				"          resource_reservation = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,resource_reservation}.{http://www.collegenet.com/r25,resource_count},",
+				"          resource_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,resource_reservation}.{http://www.collegenet.com/r25,resource_id},",
+				"          resource_name = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,resource_reservation}.{http://www.collegenet.com/r25,resource_name},",
+				"          resource_count = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,resource_reservation}.{http://www.collegenet.com/r25,resource_count},",
+				"          resource_instruction_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,resource_reservation}.{http://www.collegenet.com/r25,resource_instruction_id},",
+				"          resource_instructions = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,resource_reservation}.{http://www.collegenet.com/r25,resource_instructions},",
+				"          space_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,space_id},",
+				"          space_name = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,space_name},",
+				"          actual_count = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,actual_count},",
+				"          layout_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,layout_id},",
+				"          layout_name = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,layout_name},",
+				"          default_layout_capacity = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,default_layout_capacity},",
+				"          selected_layout_capacity = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,selected_layout_capacity},",
+				"          shared = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,shared},",
+				"          space_instruction_id = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,space_instruction_id},",
+				"          space_instructions = {http://www.collegenet.com/r25,reservations}.{http://www.collegenet.com/r25,reservation}.{http://www.collegenet.com/r25,space_reservation}.{http://www.collegenet.com/r25,space_instructions}",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"flatten1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

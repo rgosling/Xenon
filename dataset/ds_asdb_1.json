@@ -1,0 +1,23 @@
+{
+	"name": "ds_asdb_1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_db",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"ServerName": {
+					"value": "xenon-db-server.database.windows.net",
+					"type": "Expression"
+				},
+				"DatabaseName": {
+					"value": "xenondb",
+					"type": "Expression"
+				}
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

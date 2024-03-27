@@ -1,0 +1,430 @@
+{
+	"name": "pl-copydata_copy1",
+	"properties": {
+		"description": "2nd level pipeline",
+		"activities": [
+			{
+				"name": "lk_jobs",
+				"description": "Read the control_ingest table for things to do.",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "SELECT group_label,source_database,source_schema,source_table,source_key_columnlist,source_extract_sql,data_lake_container,data_lake_folder FROM dbo.control_ingest WHERE is_active_flag = 'Y'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_asdb",
+						"type": "DatasetReference",
+						"parameters": {
+							"p_schema": "dbo",
+							"p_table": "unknown"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "fe_control_item",
+				"description": "Iterate over the rows from the control table",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "lk_jobs",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('lk_jobs').output.value\n",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "cp_item_data",
+							"description": "Copy the control item data",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "@{item().source_extract_sql}",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_asdb",
+									"type": "DatasetReference",
+									"parameters": {
+										"p_schema": "dbo",
+										"p_table": "unknown"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_csv",
+									"type": "DatasetReference",
+									"parameters": {
+										"p_path": {
+											"value": "@item().data_lake_folder",
+											"type": "Expression"
+										},
+										"p_name": {
+											"value": "@concat(item().group_label,'_',formatDateTime(utcnow(), 'yyyy'), formatDateTime(utcnow(), 'MM'), formatDateTime(utcnow(), 'dd'), '_', formatDateTime(utcnow(), 'HH'),formatDateTime(utcnow(), 'mm'), formatDateTime(utcnow(), 'ss'),'.csv')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "sp_success",
+							"description": "Runs on successful execution to save rows copied and other stats",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "cp_item_data",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[save_df_run_stats]",
+								"storedProcedureParameters": {
+									"CopyActivity_End_Time": {
+										"value": {
+											"value": "@{utcnow()}' as CopyActivity_End_Time",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"CopyActivity_queuingDuration_in_secs": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].detailedDurations.queuingDuration}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"CopyActivity_Start_Time": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].start}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"CopyActivity_transferDuration_in_secs": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].detailedDurations.transferDuration}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"copyDuration_in_secs": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.copyDuration}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"DataFactory_Name": {
+										"value": {
+											"value": "@{pipeline().DataFactory}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"effectiveIntegrationRuntime": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.effectiveIntegrationRuntime}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Execution_Status": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].status}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"No_ParallelCopies": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.usedParallelCopies}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Pipeline_Name": {
+										"value": {
+											"value": "@{pipeline().Pipeline}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"RowsCopied": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.rowsCopied}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"RowsRead": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.rowsRead}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"RunId": {
+										"value": {
+											"value": "@{pipeline().RunId}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Source_Type": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].source}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Sync_Type": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].sink}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"TriggerTime": {
+										"value": {
+											"value": "@{pipeline().TriggerTime}",
+											"type": "Expression"
+										},
+										"type": "DateTime"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "ls_sqldb",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "sp_fail",
+							"description": "Runs on failed execution",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "cp_item_data",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[save_df_run_stats]",
+								"storedProcedureParameters": {
+									"CopyActivity_End_Time": {
+										"value": {
+											"value": "@{utcnow()}' as CopyActivity_End_Time",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"CopyActivity_queuingDuration_in_secs": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].detailedDurations.queuingDuration}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"CopyActivity_Start_Time": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].start}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"CopyActivity_transferDuration_in_secs": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].detailedDurations.transferDuration}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"copyDuration_in_secs": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.copyDuration}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"DataFactory_Name": {
+										"value": {
+											"value": "@{pipeline().DataFactory}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"effectiveIntegrationRuntime": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.effectiveIntegrationRuntime}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Execution_Status": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].status}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"No_ParallelCopies": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.usedParallelCopies}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Pipeline_Name": {
+										"value": {
+											"value": "@{pipeline().Pipeline}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"RowsCopied": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.rowsCopied}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"RowsRead": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.rowsRead}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"RunId": {
+										"value": {
+											"value": "@{pipeline().RunId}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Source_Type": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].source}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"Sync_Type": {
+										"value": {
+											"value": "@{activity('cp_item_data').output.executionDetails[0].sink}",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"TriggerTime": {
+										"value": {
+											"value": "@{pipeline().TriggerTime}",
+											"type": "Expression"
+										},
+										"type": "DateTime"
+									},
+									"ErrorMessage": {
+										"value": {
+											"value": "@{replace(activity('cp_item_data').output.errors[0].Message,'''','')}\n\n",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "ls_sqldb",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2023-05-25T21:37:04Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
